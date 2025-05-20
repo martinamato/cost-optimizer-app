@@ -14,10 +14,10 @@ const Optimizer = () => {
     const proveedores = JSON.parse(localStorage.getItem('proveedores') || '[]');
 
     try {
-      const response = await fetch('http://localhost:4000/api/optimize', {
+      const response = await fetch("/api/generate", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gastos, proveedores }),
+        body: JSON.stringify({ gastos }),
       });
 
       const data = await response.json();

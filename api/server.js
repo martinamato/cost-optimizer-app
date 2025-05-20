@@ -17,8 +17,7 @@ const openai = new OpenAI({
 app.post('/api/optimize', async (req, res) => {
   const { gastos, proveedores } = req.body;
 
-  const prompt = `
-Eres un asistente financiero para emprendedores.
+  const prompt = `Eres un asistente financiero para emprendedores.
 Analiza estos datos y sugiere cómo reducir costos y mejorar rentabilidad.
 
 Gastos:
