@@ -1,50 +1,52 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import OpenAI from 'openai';
-
-dotenv.config();
+// server.js
+import express, { json } from "express";
+import cors from "cors";
+import { config } from "dotenv";
+import fetch from "node-fetch"; // Asegurate de tener esto instalado
+config();
 
 const app = express();
+const PORT = 3000;
+
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
-// Usar el nuevo cliente de OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+app.post("/api/generate", async (req, res) => {
+  const { gastos } = req.body;
 
-app.post('/api/generate', async (req, res) => {
-  const { gastos, proveedores } = req.body;
-
-  const prompt = `Eres un asistente financiero para emprendedores.
-Analiza estos datos y sugiere cómo reducir costos y mejorar rentabilidad.
-
-Gastos:
-${JSON.stringify(gastos, null, 2)}
-
-Proveedores:
-${JSON.stringify(proveedores, null, 2)}
-
-Dame recomendaciones claras y breves.
-`;
+  const formattedInput = `Actúa como un asesor financiero. Dado este listado de gastos mensuales, sugiere formas concretas de reducir el presupuesto sin afectar calidad de vida:\n
+  ${gastos
+    .map((e) => `- ${e.descripcion}: $${e.monto}`)
+    .join("\n")}`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
-    });
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/google/flan-t5-small",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.HF_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputs: formattedInput,
+        }),
+      }
+    );
 
-    const response = completion.choices[0].message.content;
-    res.json({ suggestions: response });
+    const data = await response.json();
+    res.json({ result: data[0]?.generated_text || "Sin respuesta" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al generar sugerencias' });
+    res.status(500).json({ error: "Error al contactar Hugging Face" });
   }
 });
 
-const PORT = process.env.PORT || 4000;
+// 🔴 IMPORTANTE: ruta por defecto para evitar errores 404
+app.use((req, res) => {
+  res.status(404).send("Not Found");
+});
+
 app.listen(PORT, () => {
-  console.log(`Servidor backend escuchando en el puerto ${PORT}`);
+  console.log(`Backend corriendo en http://localhost:${PORT}`);
 });
