@@ -14,7 +14,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-app.post('/api/optimize', async (req, res) => {
+app.post('/api/generate', async (req, res) => {
   const { gastos, proveedores } = req.body;
 
   const prompt = `Eres un asistente financiero para emprendedores.
