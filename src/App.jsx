@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import Navbar from './components/NavBar';
 import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
 import Optimizer from './pages/Optimizer';
