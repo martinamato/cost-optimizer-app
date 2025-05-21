@@ -16,29 +16,30 @@ export default async function handler(req, res) {
       .map((e) => `- ${e.name}: $${e.amount}`)
       .join('\n')}`;
 
-    const response = await fetch(
-      'https://api-inference.huggingface.co/models/google/flan-t5-small',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.HF_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: formattedInput,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Hugging Face error: ${error}`);
-    }
-
-    const data = await response.json();
-    const result = Array.isArray(data) ? data[0]?.generated_text : data;
-
-    return res.status(200).json({ result });
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            messages: [
+              {
+                role: "user",
+                content: formattedInput,
+              },
+            ],
+          }),
+        }
+      );
+  
+      const data = await response.json();
+      // Extraer la respuesta del modelo desde el campo correcto
+      const content = data.choices?.[0]?.message?.content;
+    return res.status(200).json({ content });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Error processing request' });

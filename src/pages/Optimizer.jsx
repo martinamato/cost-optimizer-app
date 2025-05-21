@@ -21,8 +21,8 @@ const Optimizer = () => {
       });
 
       const data = await response.json();
-      if (data.suggestions) {
-        setSuggestions(data.suggestions);
+      if (data?.result) {
+        setSuggestions(data.result);
       } else {
         setSuggestions('No se obtuvieron sugerencias');
       }
